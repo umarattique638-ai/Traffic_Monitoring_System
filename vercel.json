@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "installCommand": "npm ci --prefix backend && npm ci --prefix Frontend",
+  "buildCommand": "VITE_API_URL=/api/v1 npm run build --prefix Frontend && node backend/scripts/build-vercel.mjs"
+}

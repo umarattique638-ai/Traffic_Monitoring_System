@@ -1,0 +1,55 @@
+name = "tailwatch-collector"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+# Region this deployment serves. A site key is valid only in its own region.
+# EXPOSE_DROP_REASON is deliberately NOT set here: production responses must not say why a hit was
+# dropped (STAGE-1 D2). Local dev sets it in .dev.vars.
+[vars]
+# One queue message per kind of drop per 5 s per isolate, with a hit count (src/index.ts queueDrop).
+DROP_BATCH_MS = "5000"
+REGION = "in"
+
+# Stage 2: edge collector bindings.
+# Replace the placeholder KV id before deploying to a real account.
+[[kv_namespaces]]
+binding = "SITE_CONFIG"
+id = "0878a2b0f1c148148ec8dbe73cac767c"
+preview_id = "00000000000000000000000000000000"
+
+[[queues.producers]]
+binding = "EVENTS"
+queue = "tailwatch-events"
+
+# Rate limiting (free features only, STAGE-1 D9). VERIFY on first deploy: the docs do not state whether
+# this binding exists on the Workers Free plan. If `wrangler deploy` rejects it, delete both [[ratelimits]]
+# blocks: the collector treats a missing limiter as "allowed".
+# Per-site limiter (keyed by public key), applied before the KV lookup.
+# namespace_id: any positive integer unique within your account.
+# Free plan budget (2026-10-09 review): the queue takes about 3,300 messages a day, so these are kept
+# tight. A real visitor sends a few hits a minute; raise them when the account moves to a paid plan.
+[[ratelimits]]
+name = "RATE_LIMITER"
+namespace_id = "1001"
+  [ratelimits.simple]
+  limit = 600
+  period = 60
+
+# Per-client limiter, applied before the body is read.
+[[ratelimits]]
+name = "RATE_LIMITER_IP"
+namespace_id = "1002"
+  [ratelimits.simple]
+  limit = 120
+  period = 60
+
+# Workers Logs (Free plan: 200K events/day). Without it a failing batch's reason is invisible.
+[observability]
+enabled = true
+
+# Stage 4: the tracker script, served from this Worker's own origin (PLAN 2.4: Workers static assets,
+# free and not counted as Worker requests). GET /tw.js is answered from these files without running
+# the Worker; /e, /e.gif and /health are not files, so they still reach the Worker.
+# Built by `npm run build:tracker` (the collector build/deploy scripts run it).
+[assets]
+directory = "../tracker/dist/cdn"

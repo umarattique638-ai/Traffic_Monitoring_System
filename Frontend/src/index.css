@@ -1,0 +1,64 @@
+@import 'tailwindcss';
+
+/* The app is light only: `dark:` classes (kept from the component kit) apply only under a .dark parent, which we never set. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Small, quick motion for menus, dialogs and the install check. Off for people who ask for less motion. */
+@keyframes tw-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes tw-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes tw-check {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes tw-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [class*='animate-[tw-'] {
+    animation: none !important;
+  }
+  .animate-pulse,
+  .animate-spin {
+    animation-duration: 3s;
+  }
+}
+
+/* Chart tooltips (recharts takes inline styles). */
+:root {
+  --tw-tip-bg: #ffffff;
+  --tw-tip-fg: #0f172a;
+  --tw-tip-muted: #64748b;
+  --tw-tip-border: rgba(148, 163, 184, 0.35);
+}

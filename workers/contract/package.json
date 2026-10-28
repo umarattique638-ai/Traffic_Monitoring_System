@@ -1,0 +1,15 @@
+{
+  "name": "@tailwatch/contract",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./url": "./src/url.ts",
+    "./wire": "./src/wire.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  }
+}

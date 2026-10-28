@@ -1,0 +1,39 @@
+{
+  "name": "tailwatch-workers",
+  "private": true,
+  "type": "module",
+  "description": "TailWatch Cloudflare side: contract, tracker (tw.js), collector and consumer Workers.",
+  "engines": {
+    "node": ">=20"
+  },
+  "workspaces": [
+    "contract",
+    "tracker-core",
+    "tracker",
+    "collector",
+    "consumer",
+    "demo"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "build:tracker": "npm run build -w @tailwatch/browser",
+    "dev": "npm run build:tracker && wrangler dev -c collector/wrangler.toml -c consumer/wrangler.toml --port 8787 --persist-to .wrangler/state",
+    "deploy:collector": "npm run deploy -w @tailwatch/collector",
+    "deploy:consumer": "npm run deploy -w @tailwatch/consumer",
+    "deploy:demo": "npm run deploy -w @tailwatch/demo",
+    "deploy": "npm run deploy:consumer && npm run deploy:collector",
+    "lists:generate": "node scripts/lists.mjs generate",
+    "lists:check": "node scripts/lists.mjs check",
+    "lists:update": "node scripts/lists.mjs update"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261001.1",
+    "@types/node": "^22.0.0",
+    "esbuild": "0.28.1",
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0",
+    "wrangler": "^4.148.0",
+    "yaml": "^2.5.0"
+  }
+}

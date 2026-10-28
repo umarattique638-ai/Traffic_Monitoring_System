@@ -1,0 +1,120 @@
+import { useState } from 'react'
+import { Navigate, useNavigate } from 'react-router-dom'
+import { ChevronDown, MousePointerClick } from 'lucide-react'
+import CancelSetup from '../../components/onboarding/CancelSetup'
+import CodeBlock from '../../components/onboarding/CodeBlock'
+import Button from '../../components/ui/Button'
+import PageHeader from '../../components/ui/PageHeader'
+import PageLoading from '../../components/ui/PageLoading'
+import { muted } from '../../components/ui/styles'
+import { useDocumentTitle } from '../../hooks/common/useDocumentTitle'
+import { useSetup } from '../../hooks/setup/useSetup'
+
+/** Where <head> is on common site builders (one line each; the snippet itself comes from the API). */
+const WHERE: { name: string; how: string }[] = [
+  { name: 'Plain HTML', how: 'every page, inside <head> … </head>' },
+  { name: 'React / Vite / Vue', how: 'index.html, inside <head>' },
+  { name: 'Next.js', how: 'app/layout.tsx: a <head> inside <html>, or next/script' },
+  { name: 'WordPress', how: 'a "header and footer scripts" plugin, or the theme header' },
+  { name: 'Shopify', how: 'Online Store > Themes > Edit code > theme.liquid, before </head>' },
+  { name: 'Webflow / Wix / Squarespace', how: 'Settings > Custom code > Head code' },
+]
+
+const head = <code className='rounded bg-slate-100 px-1 py-0.5 text-[13px]'>&lt;head&gt;</code>
+
+/**
+ * Setup step 2: the script tag in <head>, plus optional custom-event code. Both snippets are made by the API
+ * for the setup's key. The site is not saved yet: that happens on the next step, once every check passes.
+ */
+function Install() {
+  useDocumentTitle('Install the script')
+  const navigate = useNavigate()
+  const { setup, isLoading } = useSetup()
+  const [eventsOpen, setEventsOpen] = useState(false)
+
+  if (isLoading) return <PageLoading />
+  if (!setup) return <Navigate to='/sites/new' replace />
+  const tag = setup.snippets.find((s) => s.group === 'script-tag') ?? null
+  const events = setup.snippets.find((s) => s.group === 'custom-event') ?? null
+
+  return (
+    <>
+      <PageHeader
+        compact
+        title='Add the script to your site'
+        description={
+          <>
+            For <b className='text-slate-700'>{setup.domain}</b>. Copy this one line and paste it inside the {head} of
+            every page.
+          </>
+        }
+      />
+
+      {tag && (
+        <>
+          <CodeBlock code={tag.code} copyLabel='Copy script' copyTestId='copy-script' />
+          {tag.note && <p className={`mt-3 text-[13px] leading-relaxed ${muted}`}>{tag.note}</p>}
+          <div className='mt-5 flex flex-wrap items-center gap-3'>
+            <Button onClick={() => navigate('/verify')}>I added it</Button>
+            <span className={`text-[13px] ${muted}`}>Next we check your page step by step.</span>
+          </div>
+        </>
+      )}
+
+      <details className='group mt-7 rounded-xl border border-slate-200 text-sm'>
+        <summary className='flex cursor-pointer list-none items-center justify-between gap-2 rounded-xl px-4 py-3 font-medium text-slate-700 focus-visible:ring-4 focus-visible:ring-teal-600/20 focus-visible:outline-none'>
+          Where is &lt;head&gt; on my site?
+          <ChevronDown
+            className='size-4 flex-none text-slate-400 transition group-open:rotate-180'
+            aria-hidden='true'
+          />
+        </summary>
+        <dl className='grid gap-2 border-t border-slate-200 px-4 py-3'>
+          {WHERE.map((w) => (
+            <div key={w.name} className='flex flex-col sm:flex-row sm:gap-2'>
+              <dt className='font-semibold text-slate-800 sm:w-52 sm:flex-none'>{w.name}</dt>
+              <dd className={muted}>{w.how}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
+
+      {events && (
+        <section className='mt-3 rounded-xl border border-slate-200'>
+          <button
+            type='button'
+            onClick={() => setEventsOpen((o) => !o)}
+            aria-expanded={eventsOpen}
+            className='flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 text-left focus-visible:ring-4 focus-visible:ring-teal-600/20 focus-visible:outline-none'
+          >
+            <span className='grid size-9 flex-none place-items-center rounded-lg bg-teal-50 text-teal-700'>
+              <MousePointerClick className='size-[18px]' aria-hidden='true' />
+            </span>
+            <span className='min-w-0 flex-1'>
+              <span className='block text-sm font-semibold text-slate-900'>Track custom events (optional)</span>
+              <span className={`block text-[13px] ${muted}`}>
+                Count clicks, sign-ups or purchases. Paste the code where the action happens.
+              </span>
+            </span>
+            <ChevronDown
+              className={`size-4 flex-none text-slate-400 transition ${eventsOpen ? 'rotate-180' : ''}`}
+              aria-hidden='true'
+            />
+          </button>
+          {eventsOpen && (
+            <div className='border-t border-slate-200 p-4'>
+              <CodeBlock code={events.code} copyLabel='Copy event code' copyTestId='copy-events' />
+              {events.note && <p className={`mt-3 text-[13px] leading-relaxed ${muted}`}>{events.note}</p>}
+            </div>
+          )}
+        </section>
+      )}
+
+      <div className='mt-6 flex justify-end border-t border-slate-100 pt-5'>
+        <CancelSetup domain={setup.domain} />
+      </div>
+    </>
+  )
+}
+
+export default Install
