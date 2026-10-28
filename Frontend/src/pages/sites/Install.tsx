@@ -34,8 +34,8 @@ function Install() {
 
   if (isLoading) return <PageLoading />
   if (!setup) return <Navigate to='/sites/new' replace />
-  const tag = setup.snippets.find((s) => s.group === 'script-tag') ?? null
-  const events = setup.snippets.find((s) => s.group === 'custom-event') ?? null
+  const tag = setup.snippets.find((s) => s.id === 'script-tag') ?? null
+  const events = setup.snippets.find((s) => s.id === 'custom-event') ?? null
 
   return (
     <>

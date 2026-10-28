@@ -61,8 +61,7 @@ export interface KvIssue {
 }
 
 export interface Snippet {
-  id: string
-  group: 'script-tag' | 'custom-event'
+    id: 'script-tag' | 'custom-event'
   label: string
   language: string
   code: string
